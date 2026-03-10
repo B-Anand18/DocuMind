@@ -1,20 +1,89 @@
-# DocuMind – RAG Knowledge Assistant
+# DocuMind – RAG Chatbot
 
-DocuMind is a **Retrieval-Augmented Generation (RAG) application** that allows users to upload documents or provide a website URL and ask questions about the content using natural language.
-
-The system crawls websites (including internal links), processes documents, generates embeddings, and retrieves relevant context to produce accurate AI-powered answers.
+A full-stack **Retrieval-Augmented Generation (RAG)** chatbot that lets you upload PDF documents and ask natural language questions about them. Answers are grounded in your documents and include exact page citations.
 
 ---
 
-## Features
+## Tech Stack
 
-- Upload **PDF, DOCX, TXT** files
-- Ingest entire **websites with child pages**
-- Automatic **text chunking**
-- **Vector embeddings** for semantic search
-- AI-powered **question answering**
-- **Source references** from documents
-- Simple **Streamlit UI**
+| Layer | Technology |
+|---|---|
+| Backend | FastAPI (Python 3.12) |
+| Embeddings | OpenAI `text-embedding-ada-002` |
+| LLM | OpenAI `gpt-4o-mini` |
+| Vector DB | FAISS (local, on disk) |
+| Orchestration | LangChain |
+| Frontend | Jinja2 + Vanilla HTML/CSS/JS |
+
+---
+
+## Project Structure
+
+```
+DocuMind/
+│
+├── backend/
+│   ├── main.py            # FastAPI app – /upload and /chat routes
+│   ├── ingest.py          # PDF loading, chunking, embedding & FAISS storage
+│   ├── rag_pipeline.py    # FAISS loader utility
+│   ├── chat_service.py    # RAG retrieval chain (LangChain runnables)
+│   ├── requirements.txt
+│   ├── templates/
+│   │   └── index.html     # Jinja2 UI
+│   ├── static/
+│   │   └── styles.css
+│   └── faiss_db/          # Persisted FAISS index (auto-created)
+│
+├── uploads/               # Uploaded PDFs (auto-created)
+├── .env                   # OpenAI API key
+└── README.md
+```
+
+---
+
+## Setup
+
+### 1. Add your OpenAI API key
+
+Edit `.env` in the project root:
+
+```
+OPENAI_API_KEY=your_key_here
+```
+
+### 2. Create & activate a virtual environment
+
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```powershell
+cd backend
+pip install -r requirements.txt
+```
+
+### 4. Run the server
+
+```powershell
+# from the backend/ directory
+uvicorn main:app --reload
+```
+
+### 5. Open the app
+
+Navigate to **http://localhost:8000** in your browser.
+
+---
+
+## Usage
+
+1. Click **browse** (or drag & drop) in the sidebar to upload a PDF.  
+2. Wait for the *"uploaded and indexed successfully"* confirmation.  
+3. Type a question in the chat box and press **Enter** or the send button.  
+4. Read the answer and expand the **Sources** cards to see exact page numbers and excerpts.
 
 ---
 
@@ -23,102 +92,16 @@ The system crawls websites (including internal links), processes documents, gene
 ```
 User Query
    ↓
-Embedding Generation
+OpenAI Embeddings (query)
    ↓
-Vector Search (ChromaDB)
+FAISS Vector Search  ←──── Persisted FAISS index
+   ↓                              ↑
+Top-5 Relevant Chunks        ingest.py  ←  PDF upload
    ↓
-Relevant Context Retrieval
+ChatPromptTemplate + ChatOpenAI (gpt-4o-mini)
    ↓
-LLM Response Generation
+Answer + Source Citations
 ```
-
----
-
-## Tech Stack
-
-- **Backend:** FastAPI  
-- **Frontend:** Streamlit  
-- **Vector Database:** ChromaDB  
-- **Embeddings:** SentenceTransformers  
-- **Web Crawling:** BeautifulSoup + Trafilatura  
-- **LLM:** OpenAI / Local LLM  
-
----
-
-## Project Structure
-
-```
-rag-documind
-│
-├── backend
-│   ├── main.py
-│   ├── crawler.py
-│   ├── embeddings.py
-│   └── rag_pipeline.py
-│
-├── frontend
-│   └── app.py
-│
-├── vector_store
-├── data
-├── requirements.txt
-└── README.md
-```
-
----
-
-## Setup
-
-Create virtual environment
-
-```
-python -m venv venv
-venv\Scripts\activate
-```
-
-Install dependencies
-
-```
-pip install -r requirements.txt
-```
-
-Run backend
-
-```
-uvicorn backend.main:app --reload
-```
-
-Run frontend
-
-```
-streamlit run frontend/app.py
-```
-
----
-
-## Example
-
-1. Enter a website URL  
-2. System crawls and indexes all pages  
-3. Ask a question
-
-Example:
-
-```
-How does Python garbage collection work?
-```
-
-DocuMind retrieves relevant sections and generates an answer.
-
----
-
-## Future Improvements
-
-- Sitemap based crawling
-- Multi-user document workspaces
-- Chat history
-- Hybrid search (vector + keyword)
-- Scalable vector databases (Pinecone / Weaviate)
 
 ---
 
