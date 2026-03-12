@@ -20,8 +20,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from ingest import ingest_pdf, ingest_url
-from chat_service import answer_question
+from backend.ingest import ingest_pdf, ingest_url
+from backend.chat_service import answer_question
 
 load_dotenv()
 
