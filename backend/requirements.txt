@@ -9,3 +9,7 @@ pypdf
 python-dotenv
 jinja2
 python-multipart
+requests
+beautifulsoup4
+lxml
+playwright

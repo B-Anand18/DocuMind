@@ -4,9 +4,10 @@ main.py
 FastAPI application entry point.
 
 Endpoints:
-  GET  /          – Serves the Jinja2 HTML frontend
-  POST /upload    – Accepts a PDF, saves it, and triggers ingestion
-  POST /chat      – Accepts a question, runs RAG, returns answer + sources
+  GET  /            – Serves the Jinja2 HTML frontend
+  POST /upload      – Accepts a PDF, saves it, and triggers ingestion
+  POST /ingest-url  – Crawls a URL + child pages and indexes content
+  POST /chat        – Accepts a question, runs RAG, returns answer + sources
 """
 
 import os
@@ -19,7 +20,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from ingest import ingest_pdf
+from ingest import ingest_pdf, ingest_url
 from chat_service import answer_question
 
 load_dotenv()
@@ -42,6 +43,11 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 # ---------------------------------------------------------------------------
 class ChatRequest(BaseModel):
     question: str
+
+
+class IngestUrlRequest(BaseModel):
+    url: str
+    max_child_urls: int = 30
 
 
 class SourceItem(BaseModel):
@@ -76,13 +82,31 @@ async def upload_pdf(file: UploadFile = File(...)):
     with open(dest_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Trigger ingestion pipeline
     try:
         ingest_pdf(dest_path)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {exc}") from exc
 
     return {"message": f"'{file.filename}' uploaded and indexed successfully."}
+
+
+@app.post("/ingest-url")
+async def ingest_url_endpoint(body: IngestUrlRequest):
+    """
+    Crawl a URL and its same-domain child pages, then index the content into FAISS.
+    """
+    url = body.url.strip()
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="URL must start with http:// or https://")
+
+    try:
+        pages_indexed = ingest_url(url, max_child_urls=body.max_child_urls)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"URL ingestion failed: {exc}") from exc
+
+    return {"message": f"Crawled and indexed {pages_indexed} page(s) from '{url}'."}
 
 
 @app.post("/chat", response_model=ChatResponse)

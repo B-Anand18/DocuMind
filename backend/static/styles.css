@@ -78,6 +78,101 @@ body {
   margin-bottom: 12px;
 }
 
+/* ── Ingest tabs (PDF / URL) ─────────────────────────────── */
+.ingest-tabs {
+  display: flex;
+  gap: 6px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px 0;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.tab-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+.tab-btn.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+/* Ingest panels */
+.ingest-panel { display: flex; flex-direction: column; gap: 8px; }
+
+/* URL input field */
+.url-input {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.url-input::placeholder { color: var(--text-muted); }
+.url-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Max pages row */
+.url-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.url-option-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.url-pages-input {
+  width: 64px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  text-align: center;
+  transition: border-color var(--transition);
+}
+.url-pages-input:focus { border-color: var(--accent); }
+
+/* Crawl button */
+.crawl-btn {
+  width: 100%;
+  padding: 10px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent), #5b4bd8);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--accent-glow);
+  transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+}
+.crawl-btn:hover   { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+.crawl-btn:active  { transform: translateY(0); }
+.crawl-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
 /* Upload zone */
 .upload-zone {
   display: flex;
