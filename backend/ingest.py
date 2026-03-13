@@ -16,7 +16,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from dotenv import load_dotenv
 
-from crawler import extract_documents_from_url
+from backend.crawler import extract_documents_from_url
 
 load_dotenv()
 
