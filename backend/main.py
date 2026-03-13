@@ -11,7 +11,7 @@ Endpoints:
 """
 
 import os
-import shutil
+import io
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -20,8 +20,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from backend.ingest import ingest_pdf, ingest_url
-from backend.chat_service import answer_question
+from ingest import ingest_pdf, ingest_url
+from chat_service import answer_question
 
 load_dotenv()
 
@@ -29,8 +29,6 @@ load_dotenv()
 # App setup
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(__file__)
-UPLOADS_DIR = os.path.join(BASE_DIR, "..", "uploads")
-os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 app = FastAPI(title="DocuMind RAG Chatbot")
 
@@ -73,17 +71,15 @@ async def index(request: Request):
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
     """
-    Accept a PDF upload, persist it to disk, and trigger the ingestion pipeline.
+    Accept a PDF upload, process it in-memory, and trigger the ingestion pipeline.
     """
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
 
-    dest_path = os.path.join(UPLOADS_DIR, file.filename)
-    with open(dest_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    pdf_bytes = await file.read()
 
     try:
-        ingest_pdf(dest_path)
+        ingest_pdf(pdf_bytes, file.filename)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {exc}") from exc
 
@@ -98,6 +94,17 @@ async def ingest_url_endpoint(body: IngestUrlRequest):
     url = body.url.strip()
     if not url.startswith(("http://", "https://")):
         raise HTTPException(status_code=400, detail="URL must start with http:// or https://")
+
+    # Enforce max_child_urls limit
+    max_allowed = 30
+    if body.max_child_urls > max_allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"max_child_urls cannot exceed {max_allowed}. Requested: {body.max_child_urls}"
+        )
+    
+    if body.max_child_urls < 1:
+        raise HTTPException(status_code=400, detail="max_child_urls must be at least 1")
 
     try:
         pages_indexed = ingest_url(url, max_child_urls=body.max_child_urls)

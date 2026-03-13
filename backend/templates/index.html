@@ -53,15 +53,15 @@
     <ul id="docList" class="doc-list"></ul>
 
     <div class="sidebar-footer">
-      <p>Powered by OpenAI + FAISS</p>
+      <p>Made by Anand</p>
     </div>
   </aside>
 
   <!-- ── Main Chat ───────────────────────────────────────── -->
   <main class="chat-container">
     <header class="chat-header">
-      <h1>Ask your documents anything</h1>
-      <p class="chat-subtitle">Upload a PDF on the left, then start chatting</p>
+      <h1>Ask your documents or websites anything</h1>
+      <p class="chat-subtitle">Upload a PDF or crawl a website URL on the left, then start chatting</p>
     </header>
 
     <section class="messages" id="messages">
@@ -105,7 +105,6 @@
     const uploadStatus = document.getElementById('uploadStatus');
     const docList    = document.getElementById('docList');
 
-    uploadZone.addEventListener('click', () => pdfInput.click());
     uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
     uploadZone.addEventListener('drop', e => {
@@ -116,12 +115,15 @@
     pdfInput.addEventListener('change', () => handleFiles(pdfInput.files));
 
     async function handleFiles(files) {
+      // Clear previous document list
+      docList.innerHTML = '';
+      
       for (const file of files) {
         if (!file.name.toLowerCase().endsWith('.pdf')) {
           showStatus(uploadStatus, `❌ ${file.name} is not a PDF.`, 'error');
           continue;
         }
-        showStatus(uploadStatus, `⏳ Uploading & indexing ${file.name}…`, 'loading');
+        showStatus(uploadStatus, `⏳ Clearing previous data & indexing ${file.name}…`, 'loading');
         const formData = new FormData();
         formData.append('file', file);
         try {
@@ -156,8 +158,11 @@
         return;
       }
 
+      // Clear previous document list
+      docList.innerHTML = '';
+
       crawlBtn.disabled = true;
-      showStatus(urlStatus, `⏳ Crawling ${url} (up to ${maxPages} pages)…`, 'loading');
+      showStatus(urlStatus, `⏳ Clearing previous data & crawling ${url}…`, 'loading');
 
       try {
         const res  = await fetch('/ingest-url', {
