@@ -33,8 +33,8 @@ def clear_vectorstore() -> None:
 def _split_and_store(documents: list[Document]) -> None:
     """Shared helper: chunk → embed → create fresh FAISS index."""
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
+        chunk_size=3000,
+        chunk_overlap=300,
     )
     chunks = splitter.split_documents(documents)
 
