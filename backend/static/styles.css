@@ -2,28 +2,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-primary:    #0a0a0f;
-  --bg-secondary:  #13131b;
-  --bg-sidebar:    #0f0f16;
-  --bg-surface:    #1a1a26;
-  --bg-surface2:   #22222f;
-  --accent:        #6366f1;
-  --accent-glow:   rgba(99, 102, 241, 0.3);
-  --accent-light:  #818cf8;
-  --accent-dark:   #4f46e5;
-  --text-primary:  #f1f5f9;
-  --text-secondary:#94a3b8;
-  --text-muted:    #64748b;
-  --border:        rgba(148, 163, 184, 0.1);
-  --user-bubble:   linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --bg-primary:    #f8fafc;
+  --bg-secondary:  #ffffff;
+  --bg-sidebar:    #ffffff;
+  --bg-surface:    #f1f5f9;
+  --bg-surface2:   #e2e8f0;
+  --accent:        #3b82f6;
+  --accent-glow:   rgba(59, 130, 246, 0.15);
+  --accent-light:  #60a5fa;
+  --accent-dark:   #2563eb;
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --border:        #e2e8f0;
+  --user-bubble:   linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   --success:       #10b981;
   --error:         #ef4444;
   --warning:       #f59e0b;
   --font:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --radius:        16px;
-  --radius-sm:     10px;
-  --shadow:        0 10px 40px rgba(0,0,0,0.5);
-  --shadow-sm:     0 4px 16px rgba(0,0,0,0.3);
+  --radius-sm:     12px;
+  --shadow:        0 4px 20px rgba(0,0,0,0.08);
+  --shadow-sm:     0 2px 8px rgba(0,0,0,0.06);
   --transition:    0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -40,13 +40,13 @@ body {
 
 /* Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
 ::-webkit-scrollbar-thumb { 
-  background: var(--text-muted); 
+  background: var(--border); 
   border-radius: 99px;
   transition: background var(--transition);
 }
-::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ── Sidebar ─────────────────────────────────────────────── */
 .sidebar {
@@ -60,7 +60,7 @@ body {
   gap: 24px;
   height: 100vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow);
 }
 
 .logo {
@@ -71,7 +71,7 @@ body {
 }
 .logo-icon { 
   font-size: 32px;
-  filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));
+  filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
 }
 .logo-text  {
   font-size: 24px;
@@ -116,8 +116,8 @@ body {
   position: relative;
 }
 .tab-btn:hover {
-  color: var(--text-secondary);
-  background: rgba(99, 102, 241, 0.1);
+  color: var(--text-primary);
+  background: var(--bg-surface);
 }
 .tab-btn.active {
   background: var(--accent);
@@ -246,6 +246,7 @@ body {
   background: radial-gradient(circle at center, var(--accent-glow), transparent 70%);
   opacity: 0;
   transition: opacity var(--transition);
+  pointer-events: none;
 }
 .upload-zone:hover::before,
 .upload-zone.drag-over::before {
@@ -340,12 +341,11 @@ body {
   padding: 32px 40px 24px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-secondary);
-  backdrop-filter: blur(10px);
 }
 .chat-header h1 {
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(135deg, #f1f5f9, var(--accent-light));
+  background: linear-gradient(135deg, var(--text-primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -387,7 +387,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .assistant-avatar { 
-  background: var(--bg-surface); 
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0); 
   border: 2px solid var(--border);
 }
 .user-avatar { 
@@ -405,7 +405,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .assistant-message .bubble {
-  background: var(--bg-surface);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-top-left-radius: 6px;
 }
