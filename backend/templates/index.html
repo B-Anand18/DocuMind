@@ -6,29 +6,29 @@
   <title>DocuMind – RAG Chatbot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/styles.css"/>
 </head>
 <body>
   <!-- ── Sidebar ─────────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-icon">📄</div>
+      <div class="logo-icon">✨</div>
       <span class="logo-text">DocuMind</span>
     </div>
 
     <!-- Tabs -->
     <div class="ingest-tabs">
-      <button class="tab-btn active" id="tabPdf" onclick="switchTab('pdf')">📄 PDF</button>
-      <button class="tab-btn"        id="tabUrl" onclick="switchTab('url')">🌐 URL</button>
+      <button class="tab-btn active" id="tabPdf" onclick="switchTab('pdf')">📄 Upload PDF</button>
+      <button class="tab-btn"        id="tabUrl" onclick="switchTab('url')">🌐 Crawl URL</button>
     </div>
 
     <!-- PDF Panel -->
     <div id="panelPdf" class="ingest-panel">
       <label class="upload-zone" id="uploadZone">
         <input type="file" id="pdfInput" accept=".pdf" hidden multiple/>
-        <div class="upload-icon">⬆️</div>
-        <p class="upload-hint">Drop PDF here or <span class="upload-link">browse</span></p>
+        <div class="upload-icon">📤</div>
+        <p class="upload-hint">Drag & drop your PDF here<br/>or <span class="upload-link">click to browse</span></p>
       </label>
       <div id="uploadStatus" class="upload-status"></div>
     </div>
@@ -45,7 +45,7 @@
         <label class="url-option-label" for="maxPages">Max child pages</label>
         <input type="number" id="maxPages" class="url-pages-input" value="30" min="1" max="100"/>
       </div>
-      <button class="crawl-btn" id="crawlBtn" onclick="handleUrlIngest()">🕷️ Crawl &amp; Index</button>
+      <button class="crawl-btn" id="crawlBtn" onclick="handleUrlIngest()">🔍 Start Crawling</button>
       <div id="urlStatus" class="upload-status"></div>
     </div>
 
@@ -53,15 +53,15 @@
     <ul id="docList" class="doc-list"></ul>
 
     <div class="sidebar-footer">
-      <p>Made by Anand</p>
+      <p>✨ Built with ❤️ by Anand</p>
     </div>
   </aside>
 
   <!-- ── Main Chat ───────────────────────────────────────── -->
   <main class="chat-container">
     <header class="chat-header">
-      <h1>Ask your documents or websites anything</h1>
-      <p class="chat-subtitle">Upload a PDF or crawl a website URL on the left, then start chatting</p>
+      <h1>💬 Chat with Your Documents</h1>
+      <p class="chat-subtitle">Upload a PDF or crawl a website, then ask questions and get instant answers with citations</p>
     </header>
 
     <section class="messages" id="messages">
@@ -69,7 +69,12 @@
       <div class="message assistant-message">
         <div class="avatar assistant-avatar">🤖</div>
         <div class="bubble">
-          Hello! I'm DocuMind. Upload a <strong>PDF</strong> or crawl a <strong>website URL</strong> using the sidebar, then ask me anything about the content.
+          <strong>Welcome to DocuMind! 👋</strong><br/><br/>
+          I'm your AI document assistant. Here's how to get started:<br/><br/>
+          📄 <strong>Upload a PDF</strong> - Click or drag files to the upload zone<br/>
+          🌐 <strong>Crawl a website</strong> - Enter any URL to index web content<br/>
+          💬 <strong>Ask questions</strong> - I'll answer based on your documents with exact citations<br/><br/>
+          Let's begin!
         </div>
       </div>
     </section>
@@ -79,7 +84,7 @@
       <textarea
         id="questionInput"
         class="question-input"
-        placeholder="Ask a question about your documents…"
+        placeholder="Type your question here... (e.g., 'What is this document about?')"
         rows="1"
       ></textarea>
       <button class="send-btn" id="sendBtn" title="Send">
