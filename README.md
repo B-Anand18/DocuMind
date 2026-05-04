@@ -21,18 +21,21 @@
 ## ✨ Features
 
 ### 🎯 Core Capabilities
-- **📤 Multi-Source Ingestion** - Upload PDFs or crawl entire websites
+- **📤 Multi-Source Ingestion** - Upload PDFs, crawl websites, or extract YouTube transcripts
+- **🎥 YouTube Integration** - Chat with video content using transcripts
 - **🧠 Smart Q&A** - Ask natural language questions about your content
-- **📍 Source Citations** - Every answer includes exact page numbers and excerpts
+- **📍 Source Citations** - PDF/URL answers include page numbers and excerpts
 - **🔄 Auto-Clear** - Fresh start with each upload (no data leakage)
 - **⚡ Real-time Processing** - In-memory PDF handling for speed
 - **🌐 Web Crawling** - Index up to 30 pages from any website
+- **🎯 Smart Retrieval** - Dynamic chunk retrieval based on query complexity
 
 ### 🔒 Smart & Secure
 - **Context-Aware** - Knows current date for accurate calculations
 - **No Hallucinations** - Only answers from your documents
 - **Rate Limiting** - Max 30 pages per crawl to control costs
 - **Temporary Storage** - PDFs processed in-memory, not saved
+- **LangSmith Logging** - Full observability and monitoring
 
 ---
 
@@ -40,9 +43,9 @@
 
 ### Upload & Chat
 ```
-1. Upload a PDF or enter a URL
-2. Ask: "What is this document about?"
-3. Get instant answers with source citations
+1. Upload a PDF, enter a URL, or paste a YouTube link
+2. Ask: "What is this document/video about?"
+3. Get instant answers with source citations (for PDFs/URLs)
 ```
 
 ### Example Queries
@@ -50,6 +53,8 @@
 - 📅 "How much experience does this person have?" (for resumes)
 - 🔍 "What are the main technical requirements?"
 - 💡 "Explain the methodology used"
+- 🎥 "List all questions discussed in the video" (for YouTube)
+- 📝 "What does the speaker say about X?" (for YouTube)
 
 ---
 
@@ -84,11 +89,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**4. Configure OpenAI API**
+**4. Configure API Keys**
 
 Create a `.env` file in the project root:
 ```env
 OPENAI_API_KEY=sk-your-api-key-here
+
+# Optional: LangSmith for logging and monitoring
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your-langsmith-api-key-here
+LANGCHAIN_PROJECT=DocuMind
 ```
 
 **5. Run the application**
@@ -115,9 +125,11 @@ http://localhost:8000
 | **Embeddings** | text-embedding-ada-002 | Document vectorization |
 | **Vector DB** | FAISS | Similarity search |
 | **Orchestration** | LangChain | RAG pipeline |
+| **Monitoring** | LangSmith | Logging & observability |
 | **Frontend** | HTML/CSS/JS | Modern UI |
 | **PDF Processing** | PyPDF | Document parsing |
 | **Web Crawling** | Custom crawler | Website content extraction |
+| **YouTube** | youtube-transcript-api | Video transcript extraction |
 
 ### System Flow
 
@@ -148,9 +160,11 @@ graph LR
          ┌───────────────────────┐
          │   FAISS Vector DB     │
          │  (Similarity Search)  │
+         │  Dynamic Chunk Count  │
          └───────────┬───────────┘
                      ↓
-         Top 5 Relevant Chunks
+    Top 5-20 Relevant Chunks
+    (Based on Query Type)
                      ↓
          ┌───────────────────────┐
          │  GPT-4o-mini + Date   │
@@ -170,9 +184,10 @@ DocuMind/
 │   ├── __init__.py          # Package initializer
 │   ├── main.py              # FastAPI app & routes
 │   ├── ingest.py            # Document processing pipeline
-│   ├── chat_service.py      # RAG Q&A logic
+│   ├── chat_service.py      # RAG Q&A logic with smart retrieval
 │   ├── rag_pipeline.py      # FAISS loader
 │   ├── crawler.py           # Web scraping utility
+│   ├── youtube_service.py   # YouTube transcript extraction
 │   ├── templates/
 │   │   └── index.html       # Frontend UI
 │   ├── static/
@@ -180,6 +195,7 @@ DocuMind/
 │   └── faiss_db/            # Vector store (auto-created)
 ├── .env                     # API keys (create this)
 ├── requirements.txt         # Python dependencies
+├── LANGSMITH_SETUP.md       # LangSmith configuration guide
 └── README.md               # You are here!
 ```
 
@@ -201,6 +217,23 @@ Crawl and index a website
 {
   "url": "https://example.com",
   "max_child_urls": 30
+}
+```
+
+### `POST /ingest-youtube`
+Extract and index YouTube video transcript
+```json
+{
+  "url": "https://youtube.com/watch?v=VIDEO_ID"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "YouTube video 'Video Title' indexed successfully.",
+  "title": "Video Title",
+  "duration": "15:30"
 }
 ```
 
@@ -235,6 +268,9 @@ Ask a question about indexed content
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `OPENAI_API_KEY` | Your OpenAI API key | ✅ Yes |
+| `LANGCHAIN_TRACING_V2` | Enable LangSmith tracing | ❌ Optional |
+| `LANGCHAIN_API_KEY` | Your LangSmith API key | ❌ Optional |
+| `LANGCHAIN_PROJECT` | LangSmith project name | ❌ Optional |
 
 ### Customization
 
@@ -248,7 +284,8 @@ RecursiveCharacterTextSplitter(
 
 **Change retrieval count** (in `chat_service.py`):
 ```python
-retriever = vectorstore.as_retriever(search_kwargs={"k": 5})  # Top 5 chunks
+# Dynamic retrieval based on query type
+classify_query_type(question)  # Returns chunk count: 5, 10, or 20
 ```
 
 **Modify max crawl pages** (in `main.py`):
@@ -280,8 +317,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [OpenAI](https://openai.com/) for GPT-4 and embeddings
 - [LangChain](https://langchain.com/) for RAG orchestration
+- [LangSmith](https://smith.langchain.com/) for observability
 - [FastAPI](https://fastapi.tiangolo.com/) for the amazing framework
 - [FAISS](https://github.com/facebookresearch/faiss) for vector search
+- [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api) for YouTube transcripts
 
 ---
 
