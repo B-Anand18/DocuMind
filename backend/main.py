@@ -72,7 +72,12 @@ class ChatResponse(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Serve the main chat UI."""
-    return templates.TemplateResponse(name="index.html", context={"request": request}, request=request)
+    environment = os.getenv("ENVIRONMENT", "local")
+    return templates.TemplateResponse(
+        name="index.html", 
+        context={"request": request, "environment": environment}, 
+        request=request
+    )
 
 
 @app.post("/upload")

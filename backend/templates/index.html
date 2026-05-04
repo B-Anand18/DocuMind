@@ -73,6 +73,15 @@
       
       <div id="youtubeStatus" class="upload-status"></div>
       
+      <!-- Production Warning -->
+      <div id="prodWarning" style="display: none; margin-top: 16px; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca; color: #991b1b;">
+        <strong>⚠️ YouTube Unavailable</strong><br/>
+        <p style="margin: 8px 0 0 0; font-size: 13px; line-height: 1.5;">
+          YouTube feature is disabled in cloud deployment. YouTube blocks requests from cloud platforms (Render).<br/><br/>
+          <strong>This feature works in local development only.</strong>
+        </p>
+      </div>
+      
       <!-- Video Preview Card -->
       <div id="videoPreview" style="display: none; margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
         <div style="display: flex; gap: 12px; align-items: start;">
@@ -96,8 +105,8 @@
   <!-- ── Main Chat ───────────────────────────────────────── -->
   <main class="chat-container">
     <header class="chat-header">
-      <h1>💬 Chat with Your Documents</h1>
-      <p class="chat-subtitle">Upload a PDF or crawl a website, then ask questions and get instant answers with citations</p>
+      <h1>💬 Chat with Your Content</h1>
+      <p class="chat-subtitle">Upload PDFs, crawl websites, or analyze YouTube videos – then ask questions and get instant answers</p>
     </header>
 
     <section class="messages" id="messages">
@@ -106,11 +115,11 @@
         <div class="avatar assistant-avatar">🤖</div>
         <div class="bubble">
           <strong>Welcome to DocuMind! 👋</strong><br/><br/>
-          I'm your AI document assistant. Here's how to get started:<br/><br/>
+          I'm your AI content assistant. Here's how to get started:<br/><br/>
           📄 <strong>Upload a PDF</strong> - Click or drag files to the upload zone<br/>
           🌐 <strong>Crawl a website</strong> - Enter any URL to index web content<br/>
           🎥 <strong>YouTube Video</strong> - Paste a YouTube link to chat with video transcripts<br/>
-          💬 <strong>Ask questions</strong> - I'll answer based on your documents with exact citations<br/><br/>
+          💬 <strong>Ask questions</strong> - I'll answer based on your content with exact citations<br/><br/>
           Let's begin!
         </div>
       </div>
@@ -133,6 +142,26 @@
   </main>
 
   <script>
+    // Environment variable from backend
+    const ENVIRONMENT = '{{ environment }}';
+
+    // Disable YouTube in production on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (ENVIRONMENT === 'prod') {
+        const youtubeBtn = document.getElementById('youtubeBtn');
+        const youtubeInput = document.getElementById('youtubeInput');
+        const prodWarning = document.getElementById('prodWarning');
+        
+        // Disable button and input
+        youtubeBtn.disabled = true;
+        youtubeBtn.style.opacity = '0.5';
+        youtubeBtn.style.cursor = 'not-allowed';
+        youtubeInput.disabled = true;
+        youtubeInput.style.opacity = '0.5';
+        youtubeInput.style.cursor = 'not-allowed';
+      }
+    });
+
     // ── Tab switching ─────────────────────────────────────────
     function switchTab(tab) {
       document.getElementById('panelPdf').style.display = tab === 'pdf' ? '' : 'none';
@@ -141,6 +170,11 @@
       document.getElementById('tabPdf').classList.toggle('active', tab === 'pdf');
       document.getElementById('tabUrl').classList.toggle('active', tab === 'url');
       document.getElementById('tabYoutube').classList.toggle('active', tab === 'youtube');
+      
+      // Show warning for YouTube in production
+      if (tab === 'youtube' && ENVIRONMENT === 'prod') {
+        document.getElementById('prodWarning').style.display = 'block';
+      }
     }
 
     // ── PDF Upload ─────────────────────────────────────────────
@@ -241,6 +275,11 @@
     let currentVideoUrl = null;
 
     async function handleYouTubeIngest() {
+      // Block if in production
+      if (ENVIRONMENT === 'prod') {
+        return;
+      }
+      
       const url = document.getElementById('youtubeInput').value.trim();
 
       if (!url) {

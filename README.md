@@ -10,7 +10,7 @@
 <img width="1279" height="614" alt="image" src="https://github.com/user-attachments/assets/1b87ddf0-64c6-487a-a730-220fa55a29bf" />
 
 
-*Chat with your documents and websites using advanced RAG technology*
+*Chat with your documents, websites, and videos using advanced RAG technology*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
