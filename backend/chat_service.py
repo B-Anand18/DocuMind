@@ -1,7 +1,7 @@
 """
 chat_service.py
 ---------------
-RAG retrieval chain: loads FAISS vectorstore, retrieves top-5 relevant chunks,
+RAG retrieval chain: loads FAISS vectorstore, retrieves relevant chunks dynamically,
 and generates an answer with source citations using LangChain runnables.
 """
 
@@ -14,6 +14,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.documents import Document
+from langsmith import traceable
 
 from backend.rag_pipeline import get_vectorstore
 
@@ -22,7 +23,12 @@ from backend.rag_pipeline import get_vectorstore
 # ---------------------------------------------------------------------------
 SYSTEM_PROMPT = """You are an assistant for question answering tasks.
 Use the retrieved context to answer the question.
-If the answer is not contained in the context, say you don't know. Do not provide citations or sources when you don't know the answer.
+
+IMPORTANT INSTRUCTIONS:
+- If the question asks for a LIST, SUMMARY, or OVERVIEW, compile ALL relevant information from the context
+- For "list all" or "what are all" questions, extract and enumerate every item mentioned
+- For summary questions, provide a comprehensive overview covering all main points
+- If the answer is not contained in the context, say you don't know. Do not provide citations or sources when you don't know the answer.
 
 Current date: {current_date}
 
@@ -41,9 +47,51 @@ def _format_docs(docs: list[Document]) -> str:
     return "\n\n".join(doc.page_content for doc in docs)
 
 
+def classify_query_type(question: str) -> tuple[str, int]:
+    """
+    Classify query type and return appropriate chunk count.
+    
+    Returns:
+        (query_type, chunk_count)
+        - 'comprehensive': 20 chunks (for lists, summaries, overviews)
+        - 'comparison': 10 chunks (for comparisons, differences)
+        - 'specific': 5 chunks (for specific questions)
+    """
+    question_lower = question.lower()
+    
+    # Comprehensive queries - need lots of context
+    comprehensive_keywords = [
+        'list all', 'list the', 'what are all', 'show all',
+        'summarize', 'summary', 'overview', 'explain everything',
+        'all the', 'every', 'complete list', 'enumerate',
+        'what topics', 'what questions', 'cover', 'discuss',
+        'what are the', 'give me all', 'tell me all',
+        'main points', 'key points', 'all questions',
+    ]
+    
+    # Comparison queries - need moderate context
+    comparison_keywords = [
+        'compare', 'difference between', 'vs', 'versus',
+        'contrast', 'similar', 'different', 'comparison'
+    ]
+    
+    # Check comprehensive
+    if any(keyword in question_lower for keyword in comprehensive_keywords):
+        return ('comprehensive', 20)
+    
+    # Check comparison
+    if any(keyword in question_lower for keyword in comparison_keywords):
+        return ('comparison', 10)
+    
+    # Default: specific query
+    return ('specific', 5)
+
+
+@traceable(name="answer_question")
 def answer_question(question: str) -> dict:
     """
     Run the RAG pipeline and return an answer with source citations.
+    Uses dynamic chunk retrieval based on query type.
 
     Returns:
         {
@@ -58,8 +106,12 @@ def answer_question(question: str) -> dict:
             "sources": [],
         }
 
-    # Retrieve top-5 relevant chunks
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    # Classify query and get appropriate chunk count
+    query_type, chunk_count = classify_query_type(question)
+    print(f"[Query Classification] Type: {query_type}, Retrieving {chunk_count} chunks")
+
+    # Retrieve with dynamic k value
+    retriever = vectorstore.as_retriever(search_kwargs={"k": chunk_count})
     retrieved_docs: list[Document] = retriever.invoke(question)
 
     # Build the chain with current date
@@ -101,8 +153,16 @@ def answer_question(question: str) -> dict:
         for doc in retrieved_docs:
             meta = doc.metadata
             source_name = meta.get("source", "Unknown")
+            source_type = meta.get("type", "pdf")
+            
+            # Skip citations for YouTube videos
+            if source_type == "youtube":
+                continue
+            
+            # Only show citations for PDF or URL sources
             page = meta.get("page", 0)
             key = (source_name, page)
+            
             if key not in seen:
                 seen.add(key)
                 sources.append(
