@@ -5,7 +5,7 @@
 ### AI-Powered Document Intelligence Platform
 
 <img width="1279" height="617" alt="image" src="https://github.com/user-attachments/assets/fffef196-49aa-4eef-8c34-1d7e69688279" />
-
+<br><br>
 
 <img width="1279" height="614" alt="image" src="https://github.com/user-attachments/assets/1b87ddf0-64c6-487a-a730-220fa55a29bf" />
 
