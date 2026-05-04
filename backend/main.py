@@ -13,6 +13,8 @@ Endpoints:
 import os
 import io
 
+from typing import Union
+
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,8 +22,9 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from backend.ingest import ingest_pdf, ingest_url
+from backend.ingest import ingest_pdf, ingest_url, ingest_youtube
 from backend.chat_service import answer_question
+from backend.youtube_service import extract_youtube_data
 
 load_dotenv()
 
@@ -48,9 +51,13 @@ class IngestUrlRequest(BaseModel):
     max_child_urls: int = 30
 
 
+class IngestYouTubeRequest(BaseModel):
+    url: str
+
+
 class SourceItem(BaseModel):
     source: str
-    page: int
+    page: Union[int, str]  # Can be page number (int) or timestamp (str)
     excerpt: str
 
 
@@ -130,3 +137,35 @@ async def chat(body: ChatRequest):
         raise HTTPException(status_code=500, detail=f"RAG pipeline error: {exc}") from exc
 
     return result
+
+
+@app.post("/ingest-youtube")
+async def ingest_youtube_endpoint(body: IngestYouTubeRequest):
+    """
+    Extract transcript from a YouTube video and index it into FAISS.
+    """
+    url = body.url.strip()
+    
+    # Validate YouTube URL
+    if not ("youtube.com" in url or "youtu.be" in url):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid YouTube URL. Must contain 'youtube.com' or 'youtu.be'"
+        )
+    
+    try:
+        # Extract video data
+        video_data = extract_youtube_data(url)
+        
+        # Ingest into FAISS
+        ingest_youtube(video_data)
+        
+        return {
+            "message": f"YouTube video '{video_data['metadata']['title']}' indexed successfully.",
+            "title": video_data["metadata"]["title"],
+            "duration": video_data["metadata"]["duration"],
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"YouTube ingestion failed: {exc}") from exc

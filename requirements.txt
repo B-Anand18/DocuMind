@@ -13,3 +13,6 @@ requests
 beautifulsoup4
 lxml
 playwright
+youtube-transcript-api
+pytube
+langsmith
