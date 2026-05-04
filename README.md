@@ -3,7 +3,12 @@
 # 📄 DocuMind
 
 ### AI-Powered Document Intelligence Platform
-<img width="2559" height="1238" alt="image" src="https://github.com/user-attachments/assets/66cb7b7c-8920-45f5-ba58-e93729745951" />
+
+<img width="1279" height="617" alt="image" src="https://github.com/user-attachments/assets/fffef196-49aa-4eef-8c34-1d7e69688279" />
+
+
+<img width="1279" height="614" alt="image" src="https://github.com/user-attachments/assets/1b87ddf0-64c6-487a-a730-220fa55a29bf" />
+
 
 *Chat with your documents and websites using advanced RAG technology*
 
