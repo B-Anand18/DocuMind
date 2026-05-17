@@ -114,6 +114,10 @@ body {
   cursor: pointer;
   transition: all var(--transition);
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 .tab-btn:hover {
   color: var(--text-primary);
